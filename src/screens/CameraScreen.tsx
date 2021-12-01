@@ -1,12 +1,12 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 
-const App: React.FC = () => {
+const CameraScreen: React.FC = () => {
   return (
     <View>
-      <Text>Camera App</Text>
+      <Text>Camera Screen</Text>
     </View>
   );
 };
 
-export default App;
+export default CameraScreen;
