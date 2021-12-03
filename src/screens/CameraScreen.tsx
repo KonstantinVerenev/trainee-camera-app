@@ -1,6 +1,8 @@
 import React, { useRef, useState } from 'react';
-import { View, StyleSheet, SafeAreaView, TouchableOpacity, Image } from 'react-native';
+import { View, StyleSheet, SafeAreaView, TouchableOpacity, Image, Alert } from 'react-native';
 import { RNCamera } from 'react-native-camera';
+import { PermissionsAndroid, Platform } from 'react-native';
+import CameraRoll from '@react-native-community/cameraroll';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 const CameraScreen: React.FC = () => {
@@ -24,14 +26,39 @@ const CameraScreen: React.FC = () => {
     setLastPhotoUri(null);
   };
 
-  const savePhoto = () => {};
+  const hasAndroidPermission = async () => {
+    const permission = PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE;
+
+    const hasPermission = await PermissionsAndroid.check(permission);
+    if (hasPermission) {
+      return true;
+    }
+
+    const status = await PermissionsAndroid.request(permission);
+    return status === 'granted';
+  };
+
+  const savePhoto = async () => {
+    if (Platform.OS === 'android' && !(await hasAndroidPermission())) {
+      return;
+    }
+    if (lastPhotoUri) {
+      try {
+        void CameraRoll.save(lastPhotoUri);
+        Alert.alert('Photo saved', 'Photo was saved in your Camera roll');
+        retakePhoto();
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  };
 
   if (lastPhotoUri) {
     return (
       <SafeAreaView style={styles.container}>
         <Image style={styles.lastPhoto} source={{ uri: lastPhotoUri }} />
         <View style={styles.bottomSection}>
-          <TouchableOpacity style={styles.button} onPress={() => {}}>
+          <TouchableOpacity style={styles.button} onPress={savePhoto}>
             <Icon name={'save-outline'} color={'white'} size={40} />
           </TouchableOpacity>
           <TouchableOpacity style={styles.button} onPress={retakePhoto}>
