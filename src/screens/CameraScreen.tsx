@@ -8,6 +8,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 const CameraScreen: React.FC = () => {
   const cameraRef = useRef<RNCamera | null>(null);
   const [lastPhotoUri, setLastPhotoUri] = useState<string | null>(null);
+  const [flashOn, setFlashOn] = useState<boolean>(false);
 
   const takePhoto = async () => {
     if (cameraRef?.current?.takePictureAsync) {
@@ -53,6 +54,10 @@ const CameraScreen: React.FC = () => {
     }
   };
 
+  const toggleFlash = () => {
+    setFlashOn((flashOn) => !flashOn);
+  };
+
   if (lastPhotoUri) {
     return (
       <SafeAreaView style={styles.container}>
@@ -71,13 +76,24 @@ const CameraScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <RNCamera ref={cameraRef} style={styles.camera}></RNCamera>
+      <RNCamera
+        ref={cameraRef}
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        flashMode={flashOn ? RNCamera.Constants.FlashMode.torch : RNCamera.Constants.FlashMode.off}
+        style={styles.camera}></RNCamera>
       <View style={styles.bottomSection}>
-        <TouchableOpacity style={styles.button} onPress={() => {}}>
-          <Icon name={'flash-outline'} color={'white'} size={40} />
+        <TouchableOpacity style={styles.button} onPress={toggleFlash}>
+          <Icon name={flashOn ? 'flash-off-outline' : 'flash-outline'} color={'white'} size={40} />
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={takePhoto}>
           <Icon name={'camera'} color={'white'} size={40} />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => {
+            Alert.alert('Back');
+          }}>
+          <Icon name={'exit-outline'} color={'white'} size={40} />
         </TouchableOpacity>
       </View>
     </SafeAreaView>
