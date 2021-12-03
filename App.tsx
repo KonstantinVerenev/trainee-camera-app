@@ -1,12 +1,8 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import CameraScreen from './src/screens/CameraScreen';
 
 const App: React.FC = () => {
-  return (
-    <View>
-      <Text>Camera App</Text>
-    </View>
-  );
+  return <CameraScreen />;
 };
 
 export default App;
