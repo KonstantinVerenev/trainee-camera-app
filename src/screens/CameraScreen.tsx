@@ -78,8 +78,7 @@ const CameraScreen: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <RNCamera
         ref={cameraRef}
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        flashMode={flashOn ? RNCamera.Constants.FlashMode.torch : RNCamera.Constants.FlashMode.off}
+        flashMode={flashOn ? 'torch' : 'off'}
         style={styles.camera}></RNCamera>
       <View style={styles.bottomSection}>
         <TouchableOpacity style={styles.button} onPress={toggleFlash}>
