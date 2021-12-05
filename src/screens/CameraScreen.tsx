@@ -1,11 +1,16 @@
 import React, { useRef, useState } from 'react';
-import { View, StyleSheet, SafeAreaView, TouchableOpacity, Image, Alert } from 'react-native';
+import { View, StyleSheet, SafeAreaView, TouchableOpacity, Image } from 'react-native';
 import { RNCamera } from 'react-native-camera';
-import { PermissionsAndroid, Platform } from 'react-native';
-import CameraRoll from '@react-native-community/cameraroll';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-const CameraScreen: React.FC = () => {
+import { RootStackParamList } from '../../App';
+
+type CameraScreenProps = {
+  navigation: NativeStackNavigationProp<RootStackParamList, 'CameraScreen'>;
+};
+
+const CameraScreen: React.FC<CameraScreenProps> = ({ navigation }) => {
   const cameraRef = useRef<RNCamera | null>(null);
   const [lastPhotoUri, setLastPhotoUri] = useState<string | null>(null);
   const [flashOn, setFlashOn] = useState<boolean>(false);
@@ -27,30 +32,9 @@ const CameraScreen: React.FC = () => {
     setLastPhotoUri(null);
   };
 
-  const hasAndroidPermission = async () => {
-    const permission = PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE;
-
-    const hasPermission = await PermissionsAndroid.check(permission);
-    if (hasPermission) {
-      return true;
-    }
-
-    const status = await PermissionsAndroid.request(permission);
-    return status === 'granted';
-  };
-
-  const savePhoto = async () => {
-    if (Platform.OS === 'android' && !(await hasAndroidPermission())) {
-      return;
-    }
+  const savePhoto = () => {
     if (lastPhotoUri) {
-      try {
-        void CameraRoll.save(lastPhotoUri);
-        Alert.alert('Photo saved', 'Photo was saved in your Camera roll');
-        retakePhoto();
-      } catch (error) {
-        console.log(error);
-      }
+      navigation.navigate('MainScreen', { uri: lastPhotoUri });
     }
   };
 
@@ -87,11 +71,7 @@ const CameraScreen: React.FC = () => {
         <TouchableOpacity style={styles.button} onPress={takePhoto}>
           <Icon name={'camera'} color={'white'} size={40} />
         </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => {
-            Alert.alert('Back');
-          }}>
+        <TouchableOpacity style={styles.button} onPress={() => navigation.goBack()}>
           <Icon name={'exit-outline'} color={'white'} size={40} />
         </TouchableOpacity>
       </View>
