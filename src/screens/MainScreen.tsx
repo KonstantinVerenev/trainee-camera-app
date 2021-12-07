@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import {
   StyleSheet,
   FlatList,
@@ -13,29 +13,15 @@ import { RouteProp } from '@react-navigation/native';
 
 import { MAIN_SCREEN, CAMERA_SCREEN, RootStackParamList } from '../../App';
 import { PhotoData } from '../types/typesData';
+import { useTypedSelector } from '../hooks/useTypedSelector';
 
 type MainScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, typeof MAIN_SCREEN>;
   route?: RouteProp<RootStackParamList, typeof MAIN_SCREEN>;
 };
 
-const MainScreen: React.FC<MainScreenProps> = ({ navigation, route }) => {
-  const [photoData, setPhotoData] = useState<Array<PhotoData>>([]);
-
-  useEffect(() => {
-    setPhotoData((photoData) => {
-      if (route?.params?.uri) {
-        return [
-          ...photoData,
-          {
-            id: Date.now(),
-            uri: route?.params?.uri,
-          },
-        ];
-      }
-      return photoData;
-    });
-  }, [route?.params?.uri]);
+const MainScreen: React.FC<MainScreenProps> = ({ navigation }) => {
+  const photoData = useTypedSelector((state) => state.photoData);
 
   const navigateToCameraScreen = (): void => {
     navigation.navigate(CAMERA_SCREEN);
@@ -53,20 +39,18 @@ const MainScreen: React.FC<MainScreenProps> = ({ navigation, route }) => {
     );
   };
 
-  if (!photoData.length) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.warningText}>Нет фото. Сфотографируйте что нибудь.</Text>
-        <TouchableOpacity style={styles.button} onPress={navigateToCameraScreen}>
-          <Text style={styles.buttonText}>Открыть камеру</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
   return (
     <View style={styles.container}>
-      <FlatList style={styles.photoList} data={photoData} renderItem={renderItem} numColumns={2} />
+      {photoData.length ? (
+        <FlatList
+          style={styles.photoList}
+          data={photoData}
+          renderItem={renderItem}
+          numColumns={2}
+        />
+      ) : (
+        <Text style={styles.warningText}>Нет фото. Сфотографируйте что нибудь.</Text>
+      )}
       <TouchableOpacity style={styles.button} onPress={navigateToCameraScreen}>
         <Text style={styles.buttonText}>Открыть камеру</Text>
       </TouchableOpacity>

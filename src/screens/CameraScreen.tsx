@@ -4,8 +4,11 @@ import { RNCamera } from 'react-native-camera';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { useDispatch } from 'react-redux';
 
 import { CAMERA_SCREEN, MAIN_SCREEN, RootStackParamList } from '../../App';
+
+import { addPhotoActionCreator } from '../../store/actionCreators';
 
 type CameraScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, typeof CAMERA_SCREEN>;
@@ -19,6 +22,14 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ navigation, route }) => {
   const [hereFromGallery, setHereFromGallery] = useState<boolean | undefined>(
     route?.params?.hereFromGallery,
   );
+  const dispatch = useDispatch();
+
+  const addPhoto = () => {
+    if (photoUri) {
+      dispatch(addPhotoActionCreator(photoUri));
+      navigation.navigate(MAIN_SCREEN);
+    }
+  };
 
   const takePhoto = async () => {
     if (cameraRef?.current?.takePictureAsync) {
@@ -38,11 +49,13 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ navigation, route }) => {
     setPhotoUri(undefined);
   };
 
-  const savePhoto = () => {
-    if (photoUri) {
-      navigation.navigate(MAIN_SCREEN, { uri: photoUri });
-    }
-  };
+  // const savePhoto = () => {
+  //   // if (photoUri) {
+  //   //   navigation.navigate(MAIN_SCREEN, { uri: photoUri });
+  //   // }
+  //   console.log('save photo');
+  //   addPhoto();
+  // };
 
   const toggleFlash = () => {
     setFlashOn((flashOn) => !flashOn);
@@ -52,7 +65,7 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ navigation, route }) => {
     <>
       <Image style={styles.lastPhoto} source={{ uri: photoUri }} />
       <View style={styles.bottomSection}>
-        <TouchableOpacity style={styles.button} onPress={savePhoto}>
+        <TouchableOpacity style={styles.button} onPress={addPhoto}>
           <Icon name={'save-outline'} color={'white'} size={40} />
         </TouchableOpacity>
         {hereFromGallery ? (
