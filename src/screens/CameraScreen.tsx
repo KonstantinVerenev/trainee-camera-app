@@ -1,27 +1,33 @@
 import React, { useRef, useState } from 'react';
-import { View, StyleSheet, SafeAreaView, TouchableOpacity, Image } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { RNCamera } from 'react-native-camera';
-import Icon from 'react-native-vector-icons/Ionicons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RouteProp } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/Ionicons';
 
-import { RootStackParamList } from '../../App';
+import { CAMERA_SCREEN, MAIN_SCREEN, RootStackParamList } from '../../App';
 
 type CameraScreenProps = {
-  navigation: NativeStackNavigationProp<RootStackParamList, 'CameraScreen'>;
+  navigation: NativeStackNavigationProp<RootStackParamList, typeof CAMERA_SCREEN>;
+  route?: RouteProp<RootStackParamList, typeof CAMERA_SCREEN>;
 };
 
-const CameraScreen: React.FC<CameraScreenProps> = ({ navigation }) => {
+const CameraScreen: React.FC<CameraScreenProps> = ({ navigation, route }) => {
   const cameraRef = useRef<RNCamera | null>(null);
-  const [lastPhotoUri, setLastPhotoUri] = useState<string | null>(null);
+  const [photoUri, setPhotoUri] = useState<string | undefined>(route?.params?.uri);
   const [flashOn, setFlashOn] = useState<boolean>(false);
+  const [hereFromGallery, setHereFromGallery] = useState<boolean | undefined>(
+    route?.params?.hereFromGallery,
+  );
 
   const takePhoto = async () => {
     if (cameraRef?.current?.takePictureAsync) {
       try {
         const options = { quality: 0.5, base64: true };
         const data = await cameraRef.current.takePictureAsync(options);
-        console.log(data.uri);
-        setLastPhotoUri(data.uri);
+        setHereFromGallery(false);
+        setPhotoUri(data.uri);
+        setFlashOn(false);
       } catch (error) {
         console.log(error);
       }
@@ -29,12 +35,12 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ navigation }) => {
   };
 
   const retakePhoto = () => {
-    setLastPhotoUri(null);
+    setPhotoUri(undefined);
   };
 
   const savePhoto = () => {
-    if (lastPhotoUri) {
-      navigation.navigate('MainScreen', { uri: lastPhotoUri });
+    if (photoUri) {
+      navigation.navigate(MAIN_SCREEN, { uri: photoUri });
     }
   };
 
@@ -42,40 +48,44 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ navigation }) => {
     setFlashOn((flashOn) => !flashOn);
   };
 
-  if (lastPhotoUri) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <Image style={styles.lastPhoto} source={{ uri: lastPhotoUri }} />
-        <View style={styles.bottomSection}>
-          <TouchableOpacity style={styles.button} onPress={savePhoto}>
-            <Icon name={'save-outline'} color={'white'} size={40} />
+  const PreviewImgLayout = (
+    <>
+      <Image style={styles.lastPhoto} source={{ uri: photoUri }} />
+      <View style={styles.bottomSection}>
+        <TouchableOpacity style={styles.button} onPress={savePhoto}>
+          <Icon name={'save-outline'} color={'white'} size={40} />
+        </TouchableOpacity>
+        {hereFromGallery ? (
+          <TouchableOpacity style={styles.button} onPress={() => navigation.goBack()}>
+            <Icon name={'exit-outline'} color={'white'} size={40} />
           </TouchableOpacity>
+        ) : (
           <TouchableOpacity style={styles.button} onPress={retakePhoto}>
             <Icon name={'refresh-outline'} color={'white'} size={40} />
           </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    );
-  }
+        )}
+      </View>
+    </>
+  );
+
+  const CameraModeLayout = (
+    <View style={styles.bottomSection}>
+      <TouchableOpacity style={styles.button} onPress={toggleFlash}>
+        <Icon name={flashOn ? 'flash-off-outline' : 'flash-outline'} color={'white'} size={40} />
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.button} onPress={takePhoto}>
+        <Icon name={'camera'} color={'white'} size={40} />
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.button} onPress={() => navigation.goBack()}>
+        <Icon name={'exit-outline'} color={'white'} size={40} />
+      </TouchableOpacity>
+    </View>
+  );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <RNCamera
-        ref={cameraRef}
-        flashMode={flashOn ? 'torch' : 'off'}
-        style={styles.camera}></RNCamera>
-      <View style={styles.bottomSection}>
-        <TouchableOpacity style={styles.button} onPress={toggleFlash}>
-          <Icon name={flashOn ? 'flash-off-outline' : 'flash-outline'} color={'white'} size={40} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={takePhoto}>
-          <Icon name={'camera'} color={'white'} size={40} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={() => navigation.goBack()}>
-          <Icon name={'exit-outline'} color={'white'} size={40} />
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
+    <RNCamera ref={cameraRef} flashMode={flashOn ? 'torch' : 'off'} style={styles.camera}>
+      {photoUri ? PreviewImgLayout : CameraModeLayout}
+    </RNCamera>
   );
 };
 

@@ -6,61 +6,21 @@ import {
   ListRenderItem,
   TouchableOpacity,
   Text,
-  Button,
+  View,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 
-import { RootStackParamList } from '../../App';
-
-const testPhotoData: Array<PhotoData> = [
-  {
-    id: 1,
-    uri: 'https://upload.wikimedia.org/wikipedia/commons/b/b7/IBM402plugboard.Shrigley.wireside.jpg',
-    labelText: null,
-    coordinates: {
-      x: 0,
-      y: 0,
-    },
-  },
-  {
-    id: 2,
-    uri: 'https://upload.wikimedia.org/wikipedia/commons/b/b7/IBM402plugboard.Shrigley.wireside.jpg',
-    labelText: null,
-    coordinates: {
-      x: 0,
-      y: 0,
-    },
-  },
-  {
-    id: 3,
-    uri: 'https://upload.wikimedia.org/wikipedia/commons/b/b7/IBM402plugboard.Shrigley.wireside.jpg',
-    labelText: null,
-    coordinates: {
-      x: 0,
-      y: 0,
-    },
-  },
-];
-
-type PhotoData = {
-  id: number;
-  uri: string;
-  labelText: string | null;
-  coordinates: {
-    x: number;
-    y: number;
-  };
-};
+import { MAIN_SCREEN, CAMERA_SCREEN, RootStackParamList } from '../../App';
+import { PhotoData } from '../types/typesData';
 
 type MainScreenProps = {
-  navigation: NativeStackNavigationProp<RootStackParamList, 'MainScreen'>;
-  route?: RouteProp<RootStackParamList, 'MainScreen'>;
+  navigation: NativeStackNavigationProp<RootStackParamList, typeof MAIN_SCREEN>;
+  route?: RouteProp<RootStackParamList, typeof MAIN_SCREEN>;
 };
 
 const MainScreen: React.FC<MainScreenProps> = ({ navigation, route }) => {
   const [photoData, setPhotoData] = useState<Array<PhotoData>>([]);
-  // const [photoData, setPhotoData] = useState<Array<PhotoData>>(testPhotoData);
 
   useEffect(() => {
     setPhotoData((photoData) => {
@@ -68,13 +28,8 @@ const MainScreen: React.FC<MainScreenProps> = ({ navigation, route }) => {
         return [
           ...photoData,
           {
-            id: 23232323,
+            id: Date.now(),
             uri: route?.params?.uri,
-            labelText: null,
-            coordinates: {
-              x: 0,
-              y: 0,
-            },
           },
         ];
       }
@@ -82,9 +37,17 @@ const MainScreen: React.FC<MainScreenProps> = ({ navigation, route }) => {
     });
   }, [route?.params?.uri]);
 
+  const navigateToCameraScreen = (): void => {
+    navigation.navigate(CAMERA_SCREEN);
+  };
+
   const renderItem: ListRenderItem<PhotoData> = ({ item }) => {
     return (
-      <TouchableOpacity style={styles.photoItem}>
+      <TouchableOpacity
+        style={styles.photoItem}
+        onPress={() => {
+          navigation.navigate(CAMERA_SCREEN, { uri: item.uri, hereFromGallery: true });
+        }}>
         <Image style={styles.photoImage} source={{ uri: item.uri }} />
       </TouchableOpacity>
     );
@@ -92,28 +55,22 @@ const MainScreen: React.FC<MainScreenProps> = ({ navigation, route }) => {
 
   if (!photoData.length) {
     return (
-      <>
-        <Text>Нет фото. Сфотографируйте что нибудь.</Text>
-        <Button
-          title={'Camera'}
-          onPress={() => {
-            navigation.navigate('CameraScreen');
-          }}
-        />
-      </>
+      <View style={styles.container}>
+        <Text style={styles.warningText}>Нет фото. Сфотографируйте что нибудь.</Text>
+        <TouchableOpacity style={styles.button} onPress={navigateToCameraScreen}>
+          <Text style={styles.buttonText}>Открыть камеру</Text>
+        </TouchableOpacity>
+      </View>
     );
   }
 
   return (
-    <>
-      <FlatList style={styles.container} data={photoData} renderItem={renderItem} numColumns={2} />
-      <Button
-        title={'Camera'}
-        onPress={() => {
-          navigation.navigate('CameraScreen');
-        }}
-      />
-    </>
+    <View style={styles.container}>
+      <FlatList style={styles.photoList} data={photoData} renderItem={renderItem} numColumns={2} />
+      <TouchableOpacity style={styles.button} onPress={navigateToCameraScreen}>
+        <Text style={styles.buttonText}>Открыть камеру</Text>
+      </TouchableOpacity>
+    </View>
   );
 };
 
@@ -123,6 +80,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 10,
+  },
+  photoList: {
+    flex: 1,
   },
   photoItem: {
     flex: 1,
@@ -134,5 +94,20 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     borderRadius: 5,
+  },
+  warningText: {
+    marginVertical: 25,
+    textAlign: 'center',
+    fontSize: 20,
+  },
+  button: {
+    marginTop: 10,
+    alignItems: 'center',
+    backgroundColor: 'lightgreen',
+    padding: 10,
+    borderRadius: 15,
+  },
+  buttonText: {
+    fontSize: 20,
   },
 });
