@@ -13,8 +13,8 @@ import { RouteProp } from '@react-navigation/native';
 
 import { MAIN_SCREEN, CAMERA_SCREEN, RootStackParamList } from '../../App';
 import { PhotoData } from '../../store/types';
-import { useTypedSelector } from '../hooks/useTypedSelector';
 import { selectPhotoData } from '../../store/selectors';
+import { useSelector } from 'react-redux';
 
 type MainScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, typeof MAIN_SCREEN>;
@@ -22,7 +22,7 @@ type MainScreenProps = {
 };
 
 const MainScreen: React.FC<MainScreenProps> = ({ navigation }) => {
-  const photoData = useTypedSelector(selectPhotoData);
+  const photoData = useSelector(selectPhotoData);
 
   const navigateToCameraScreen = (): void => {
     navigation.navigate(CAMERA_SCREEN);

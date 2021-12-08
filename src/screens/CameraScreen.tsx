@@ -50,14 +50,6 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ navigation, route }) => {
     setPhotoUri(undefined);
   };
 
-  // const savePhoto = () => {
-  //   // if (photoUri) {
-  //   //   navigation.navigate(MAIN_SCREEN, { uri: photoUri });
-  //   // }
-  //   console.log('save photo');
-  //   addPhoto();
-  // };
-
   const toggleFlash = () => {
     setFlashOn((prevFlashState) => !prevFlashState);
   };
@@ -118,14 +110,5 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     alignItems: 'center',
     backgroundColor: 'rgba(52, 52, 52, 0.6)',
-  },
-  button: {
-    width: 70,
-    height: 70,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderRadius: 20,
-    borderColor: 'white',
   },
 });
