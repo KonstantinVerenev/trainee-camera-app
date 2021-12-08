@@ -6,9 +6,8 @@ import { RouteProp } from '@react-navigation/native';
 import { useDispatch } from 'react-redux';
 
 import { CAMERA_SCREEN, MAIN_SCREEN, RootStackParamList } from '../../App';
-import { CameraScreenButton } from '../components/CameraScreenButton';
-
 import { addPhoto } from '../../store/actions';
+import { CameraScreenButton } from '../components/CameraScreenButton';
 
 type CameraScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, typeof CAMERA_SCREEN>;
@@ -20,14 +19,13 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ navigation, route }) => {
   const [photoUri, setPhotoUri] = useState<string | undefined>(route?.params?.uri);
   const [flashOn, setFlashOn] = useState<boolean>(false);
   const dispatch = useDispatch();
-  // const [hereFromGallery, setHereFromGallery] = useState<boolean | undefined>(
-  //   route?.params?.hereFromGallery,
-  // );
+
   const isHereFromGallery = route?.params?.hereFromGallery;
 
   const addPhotoHandler = () => {
     if (photoUri) {
       dispatch(addPhoto(photoUri));
+
       navigation.navigate(MAIN_SCREEN);
     }
   };

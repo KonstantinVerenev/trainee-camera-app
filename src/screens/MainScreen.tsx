@@ -10,11 +10,11 @@ import {
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
+import { useSelector } from 'react-redux';
 
 import { MAIN_SCREEN, CAMERA_SCREEN, RootStackParamList } from '../../App';
 import { PhotoData } from '../../store/types';
 import { selectPhotoData } from '../../store/selectors';
-import { useSelector } from 'react-redux';
 
 type MainScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, typeof MAIN_SCREEN>;
