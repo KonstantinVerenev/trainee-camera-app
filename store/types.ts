@@ -1,5 +1,4 @@
-import { ADD_PHOTO } from '../../store/actionCreators';
-import { reducer } from '../../store/reducer';
+import { reducer } from './reducer';
 
 export type PhotoData = {
   id: number;
@@ -13,11 +12,6 @@ export type PhotoData = {
 
 export type MainState = {
   photoData: Array<PhotoData>;
-};
-
-export type addPhotoAction = {
-  type: typeof ADD_PHOTO;
-  payload: string;
 };
 
 // type removePhotoAction = {

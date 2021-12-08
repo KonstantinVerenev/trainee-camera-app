@@ -1,5 +1,5 @@
-import { MainState, addPhotoAction } from '../src/types/typesData';
-import { ADD_PHOTO } from './actionCreators';
+import { ADD_PHOTO, addPhotoAction } from './actions';
+import { MainState } from './types';
 
 const initialState: MainState = {
   photoData: [],

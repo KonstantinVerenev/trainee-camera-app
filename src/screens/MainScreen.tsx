@@ -12,8 +12,9 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 
 import { MAIN_SCREEN, CAMERA_SCREEN, RootStackParamList } from '../../App';
-import { PhotoData } from '../types/typesData';
+import { PhotoData } from '../../store/types';
 import { useTypedSelector } from '../hooks/useTypedSelector';
+import { selectPhotoData } from '../../store/selectors';
 
 type MainScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, typeof MAIN_SCREEN>;
@@ -21,7 +22,7 @@ type MainScreenProps = {
 };
 
 const MainScreen: React.FC<MainScreenProps> = ({ navigation }) => {
-  const photoData = useTypedSelector((state) => state.photoData);
+  const photoData = useTypedSelector(selectPhotoData);
 
   const navigateToCameraScreen = (): void => {
     navigation.navigate(CAMERA_SCREEN);
@@ -41,16 +42,15 @@ const MainScreen: React.FC<MainScreenProps> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      {photoData.length ? (
-        <FlatList
-          style={styles.photoList}
-          data={photoData}
-          renderItem={renderItem}
-          numColumns={2}
-        />
-      ) : (
-        <Text style={styles.warningText}>Нет фото. Сфотографируйте что нибудь.</Text>
-      )}
+      <FlatList
+        style={styles.photoList}
+        data={photoData}
+        renderItem={renderItem}
+        numColumns={2}
+        ListEmptyComponent={
+          <Text style={styles.warningText}>Нет фото. Сфотографируйте что нибудь.</Text>
+        }
+      />
       <TouchableOpacity style={styles.button} onPress={navigateToCameraScreen}>
         <Text style={styles.buttonText}>Открыть камеру</Text>
       </TouchableOpacity>
