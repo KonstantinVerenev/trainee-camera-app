@@ -7,7 +7,7 @@ import { useDispatch } from 'react-redux';
 
 import { CAMERA_SCREEN, MAIN_SCREEN, RootStackParamList } from '../../App';
 import { addPhoto } from '../../store/actions';
-import { CameraScreenButton } from '../components/CameraScreenButton';
+import { ActionButton } from '../components/ActionButton';
 
 type CameraScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, typeof CAMERA_SCREEN>;
@@ -16,13 +16,13 @@ type CameraScreenProps = {
 
 const CameraScreen: React.FC<CameraScreenProps> = ({ navigation, route }) => {
   const cameraRef = useRef<RNCamera | null>(null);
-  const [photoUri, setPhotoUri] = useState<string | undefined>(route?.params?.uri);
   const [flashOn, setFlashOn] = useState<boolean>(false);
   const dispatch = useDispatch();
 
-  const isHereFromGallery = route?.params?.hereFromGallery;
+  const { uri: initialPhotoUri, isHereFromGallery } = route?.params || {};
+  const [photoUri, setPhotoUri] = useState<string | undefined>(initialPhotoUri);
 
-  const addPhotoHandler = () => {
+  const savePhoto = () => {
     if (photoUri) {
       dispatch(addPhoto(photoUri));
 
@@ -60,11 +60,11 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ navigation, route }) => {
     <>
       <Image style={styles.lastPhoto} source={{ uri: photoUri }} />
       <View style={styles.bottomSection}>
-        <CameraScreenButton iconName={'save-outline'} onPress={addPhotoHandler} />
+        <ActionButton iconName={'save-outline'} onPress={savePhoto} />
         {isHereFromGallery ? (
-          <CameraScreenButton iconName={'exit-outline'} onPress={goBack} />
+          <ActionButton iconName={'exit-outline'} onPress={goBack} />
         ) : (
-          <CameraScreenButton iconName={'refresh-outline'} onPress={retakePhoto} />
+          <ActionButton iconName={'refresh-outline'} onPress={retakePhoto} />
         )}
       </View>
     </>
@@ -72,13 +72,12 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ navigation, route }) => {
 
   const CameraModeLayout = (
     <View style={styles.bottomSection}>
-      <CameraScreenButton
+      <ActionButton
         iconName={flashOn ? 'flash-off-outline' : 'flash-outline'}
         onPress={toggleFlash}
       />
-      <CameraScreenButton iconName={'camera'} onPress={takePhoto} />
-
-      <CameraScreenButton iconName={'exit-outline'} onPress={goBack} />
+      <ActionButton iconName={'camera'} onPress={takePhoto} />
+      <ActionButton iconName={'exit-outline'} onPress={goBack} />
     </View>
   );
 

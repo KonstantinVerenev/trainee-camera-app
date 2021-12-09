@@ -2,12 +2,12 @@ import React from 'react';
 import { TouchableOpacity, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-type CameraScreenButtonProps = {
+type ActionButtonProps = {
   iconName: string;
   onPress: () => void;
 };
 
-export const CameraScreenButton: React.FC<CameraScreenButtonProps> = ({ iconName, onPress }) => {
+export const ActionButton: React.FC<ActionButtonProps> = ({ iconName, onPress }) => {
   return (
     <TouchableOpacity style={styles.button} onPress={onPress}>
       <Icon name={iconName} color={'white'} size={40} />

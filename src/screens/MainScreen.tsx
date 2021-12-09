@@ -28,14 +28,14 @@ const MainScreen: React.FC<MainScreenProps> = ({ navigation }) => {
     navigation.navigate(CAMERA_SCREEN);
   };
 
-  const renderItem: ListRenderItem<PhotoData> = ({ item }) => {
+  const renderItem: ListRenderItem<PhotoData> = ({ item: { uri } }) => {
+    const onOpenCameraScreen = (): void => {
+      navigation.navigate(CAMERA_SCREEN, { isHereFromGallery: true, uri });
+    };
+
     return (
-      <TouchableOpacity
-        style={styles.photoItem}
-        onPress={() => {
-          navigation.navigate(CAMERA_SCREEN, { uri: item.uri, hereFromGallery: true });
-        }}>
-        <Image style={styles.photoImage} source={{ uri: item.uri }} />
+      <TouchableOpacity style={styles.photoItem} onPress={onOpenCameraScreen}>
+        <Image style={styles.photoImage} source={{ uri: uri }} />
       </TouchableOpacity>
     );
   };

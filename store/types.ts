@@ -11,6 +11,3 @@ export type PhotoData = {
 export type MainState = {
   photoData: Array<PhotoData>;
 };
-
-// to add another action types trough pipe
-// export type ActionType = addPhotoAction | another action
