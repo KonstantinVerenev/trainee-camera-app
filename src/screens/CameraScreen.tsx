@@ -1,22 +1,43 @@
 import React, { useRef, useState } from 'react';
-import { View, StyleSheet, SafeAreaView, TouchableOpacity, Image, Alert } from 'react-native';
+import { View, StyleSheet, Image } from 'react-native';
 import { RNCamera } from 'react-native-camera';
-import { PermissionsAndroid, Platform } from 'react-native';
-import CameraRoll from '@react-native-community/cameraroll';
-import Icon from 'react-native-vector-icons/Ionicons';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RouteProp } from '@react-navigation/native';
+import { useDispatch } from 'react-redux';
 
-const CameraScreen: React.FC = () => {
+import { CAMERA_SCREEN, MAIN_SCREEN, RootStackParamList } from '../../App';
+import { addPhoto } from '../../store/actions';
+import { ActionButton } from '../components/ActionButton';
+
+type CameraScreenProps = {
+  navigation: NativeStackNavigationProp<RootStackParamList, typeof CAMERA_SCREEN>;
+  route?: RouteProp<RootStackParamList, typeof CAMERA_SCREEN>;
+};
+
+const CameraScreen: React.FC<CameraScreenProps> = ({ navigation, route }) => {
   const cameraRef = useRef<RNCamera | null>(null);
-  const [lastPhotoUri, setLastPhotoUri] = useState<string | null>(null);
   const [flashOn, setFlashOn] = useState<boolean>(false);
+  const dispatch = useDispatch();
+
+  const { uri: initialPhotoUri, isHereFromGallery } = route?.params || {};
+  const [photoUri, setPhotoUri] = useState<string | undefined>(initialPhotoUri);
+
+  const savePhoto = () => {
+    if (photoUri) {
+      dispatch(addPhoto(photoUri));
+
+      navigation.navigate(MAIN_SCREEN);
+    }
+  };
 
   const takePhoto = async () => {
     if (cameraRef?.current?.takePictureAsync) {
       try {
         const options = { quality: 0.5, base64: true };
         const data = await cameraRef.current.takePictureAsync(options);
-        console.log(data.uri);
-        setLastPhotoUri(data.uri);
+
+        setPhotoUri(data.uri);
+        setFlashOn(false);
       } catch (error) {
         console.log(error);
       }
@@ -24,87 +45,52 @@ const CameraScreen: React.FC = () => {
   };
 
   const retakePhoto = () => {
-    setLastPhotoUri(null);
-  };
-
-  const hasAndroidPermission = async () => {
-    const permission = PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE;
-
-    const hasPermission = await PermissionsAndroid.check(permission);
-    if (hasPermission) {
-      return true;
-    }
-
-    const status = await PermissionsAndroid.request(permission);
-    return status === 'granted';
-  };
-
-  const savePhoto = async () => {
-    if (Platform.OS === 'android' && !(await hasAndroidPermission())) {
-      return;
-    }
-    if (lastPhotoUri) {
-      try {
-        void CameraRoll.save(lastPhotoUri);
-        Alert.alert('Photo saved', 'Photo was saved in your Camera roll');
-        retakePhoto();
-      } catch (error) {
-        console.log(error);
-      }
-    }
+    setPhotoUri(undefined);
   };
 
   const toggleFlash = () => {
-    setFlashOn((flashOn) => !flashOn);
+    setFlashOn((prevFlashState) => !prevFlashState);
   };
 
-  if (lastPhotoUri) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <Image style={styles.lastPhoto} source={{ uri: lastPhotoUri }} />
-        <View style={styles.bottomSection}>
-          <TouchableOpacity style={styles.button} onPress={savePhoto}>
-            <Icon name={'save-outline'} color={'white'} size={40} />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={retakePhoto}>
-            <Icon name={'refresh-outline'} color={'white'} size={40} />
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    );
-  }
+  const goBack = () => {
+    navigation.goBack();
+  };
+
+  const PreviewImgLayout = (
+    <>
+      <Image style={styles.lastPhoto} source={{ uri: photoUri }} />
+      <View style={styles.bottomSection}>
+        <ActionButton iconName={'save-outline'} onPress={savePhoto} />
+        {isHereFromGallery ? (
+          <ActionButton iconName={'exit-outline'} onPress={goBack} />
+        ) : (
+          <ActionButton iconName={'refresh-outline'} onPress={retakePhoto} />
+        )}
+      </View>
+    </>
+  );
+
+  const CameraModeLayout = (
+    <View style={styles.bottomSection}>
+      <ActionButton
+        iconName={flashOn ? 'flash-off-outline' : 'flash-outline'}
+        onPress={toggleFlash}
+      />
+      <ActionButton iconName={'camera'} onPress={takePhoto} />
+      <ActionButton iconName={'exit-outline'} onPress={goBack} />
+    </View>
+  );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <RNCamera
-        ref={cameraRef}
-        flashMode={flashOn ? 'torch' : 'off'}
-        style={styles.camera}></RNCamera>
-      <View style={styles.bottomSection}>
-        <TouchableOpacity style={styles.button} onPress={toggleFlash}>
-          <Icon name={flashOn ? 'flash-off-outline' : 'flash-outline'} color={'white'} size={40} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={takePhoto}>
-          <Icon name={'camera'} color={'white'} size={40} />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => {
-            Alert.alert('Back');
-          }}>
-          <Icon name={'exit-outline'} color={'white'} size={40} />
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
+    <RNCamera ref={cameraRef} style={styles.camera} flashMode={flashOn ? 'torch' : 'off'}>
+      {photoUri ? PreviewImgLayout : CameraModeLayout}
+    </RNCamera>
   );
 };
 
 export default CameraScreen;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   camera: {
     flex: 1,
   },
@@ -121,14 +107,5 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     alignItems: 'center',
     backgroundColor: 'rgba(52, 52, 52, 0.6)',
-  },
-  button: {
-    width: 70,
-    height: 70,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderRadius: 20,
-    borderColor: 'white',
   },
 });
