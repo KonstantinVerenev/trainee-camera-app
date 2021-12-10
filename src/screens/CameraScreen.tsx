@@ -1,12 +1,13 @@
 import React, { useRef, useState } from 'react';
-import { View, StyleSheet, Image } from 'react-native';
+import { View, StyleSheet, Text, ImageBackground } from 'react-native';
 import { RNCamera } from 'react-native-camera';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { useDispatch } from 'react-redux';
+import prompt from 'react-native-prompt-android';
 
 import { CAMERA_SCREEN, MAIN_SCREEN, RootStackParamList } from '../../App';
-import { addPhoto } from '../../store/actions';
+import { addPhoto, updatePhoto } from '../../store/actions';
 import { ActionButton } from '../components/ActionButton';
 
 type CameraScreenProps = {
@@ -19,15 +20,25 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ navigation, route }) => {
   const [flashOn, setFlashOn] = useState<boolean>(false);
   const dispatch = useDispatch();
 
-  const { uri: initialPhotoUri, isHereFromGallery } = route?.params || {};
+  const {
+    id,
+    uri: initialPhotoUri,
+    isHereFromGallery,
+    labelText: initialLabelText,
+    xPosition,
+    yPosition,
+  } = route?.params || {};
   const [photoUri, setPhotoUri] = useState<string | undefined>(initialPhotoUri);
+  const [labelText, setLabelText] = useState<string | undefined>(initialLabelText);
 
   const savePhoto = () => {
-    if (photoUri) {
-      dispatch(addPhoto(photoUri));
-
-      navigation.navigate(MAIN_SCREEN);
+    if (id && photoUri) {
+      dispatch(updatePhoto({ id, uri: photoUri, labelText }));
+    } else if (photoUri) {
+      dispatch(addPhoto({ uri: photoUri, labelText }));
     }
+
+    navigation.navigate(MAIN_SCREEN);
   };
 
   const takePhoto = async () => {
@@ -56,11 +67,31 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ navigation, route }) => {
     navigation.goBack();
   };
 
+  const onEditLabelText = () => {
+    prompt(
+      'Enter text',
+      'Enter your label text',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'OK', onPress: (text) => setLabelText(text) },
+      ],
+      {
+        defaultValue: labelText,
+        placeholder: 'label text',
+      },
+    );
+  };
+
   const PreviewImgLayout = (
     <>
-      <Image style={styles.lastPhoto} source={{ uri: photoUri }} />
+      <ImageBackground style={styles.lastPhoto} source={{ uri: photoUri }}>
+        {labelText ? (
+          <Text style={{ ...styles.labelText, left: xPosition, top: yPosition }}>{labelText}</Text>
+        ) : null}
+      </ImageBackground>
       <View style={styles.bottomSection}>
         <ActionButton iconName={'save-outline'} onPress={savePhoto} />
+        <ActionButton iconName={'text-outline'} onPress={onEditLabelText} />
         {isHereFromGallery ? (
           <ActionButton iconName={'exit-outline'} onPress={goBack} />
         ) : (
@@ -96,6 +127,8 @@ const styles = StyleSheet.create({
   },
   lastPhoto: {
     flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   bottomSection: {
     position: 'absolute',
@@ -107,5 +140,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     alignItems: 'center',
     backgroundColor: 'rgba(52, 52, 52, 0.6)',
+  },
+  labelText: {
+    // position: 'relative',
+    // left: 50,
+    // top: 0,
+    fontSize: 30,
+    color: 'white',
   },
 });

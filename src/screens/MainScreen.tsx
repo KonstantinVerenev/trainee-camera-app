@@ -28,9 +28,18 @@ const MainScreen: React.FC<MainScreenProps> = ({ navigation }) => {
     navigation.navigate(CAMERA_SCREEN);
   };
 
-  const renderItem: ListRenderItem<PhotoData> = ({ item: { uri } }) => {
+  const renderItem: ListRenderItem<PhotoData> = ({
+    item: { id, uri, labelText, xPosition, yPosition },
+  }) => {
     const onOpenCameraScreen = (): void => {
-      navigation.navigate(CAMERA_SCREEN, { isHereFromGallery: true, uri });
+      navigation.navigate(CAMERA_SCREEN, {
+        id,
+        isHereFromGallery: true,
+        uri,
+        labelText,
+        xPosition,
+        yPosition,
+      });
     };
 
     return (
@@ -86,6 +95,7 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 10,
+    marginBottom: 10,
     alignItems: 'center',
     backgroundColor: 'lightgreen',
     padding: 10,
