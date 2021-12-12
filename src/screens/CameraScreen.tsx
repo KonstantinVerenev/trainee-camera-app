@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { View, StyleSheet, Text, ImageBackground } from 'react-native';
+import { View, StyleSheet, Text, ImageBackground, Animated, PanResponder } from 'react-native';
 import { RNCamera } from 'react-native-camera';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
@@ -31,11 +31,62 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ navigation, route }) => {
   const [photoUri, setPhotoUri] = useState<string | undefined>(initialPhotoUri);
   const [labelText, setLabelText] = useState<string | undefined>(initialLabelText);
 
+  const pan = useRef(new Animated.ValueXY()).current;
+  const x = pan.x;
+  const scale = useRef(new Animated.Value(1)).current;
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onPanResponderGrant: () => {
+        pan.setOffset({
+          x: pan.x._value,
+          y: pan.y._value,
+        });
+        pan.setValue({
+          x: 0,
+          y: 0,
+        });
+        Animated.timing(scale, {
+          toValue: 1.1,
+          duration: 0,
+          useNativeDriver: false,
+        }).start();
+      },
+      onPanResponderMove: Animated.event([null, { dx: pan.x, dy: pan.y }], {
+        useNativeDriver: false,
+      }),
+      onPanResponderRelease: () => {
+        pan.flattenOffset();
+        Animated.timing(scale, {
+          toValue: 1,
+          duration: 0,
+          useNativeDriver: false,
+        }).start();
+      },
+    }),
+  ).current;
+
   const savePhoto = () => {
     if (id && photoUri) {
-      dispatch(updatePhoto({ id, uri: photoUri, labelText }));
+      dispatch(
+        updatePhoto({
+          id,
+          uri: photoUri,
+          labelText,
+          xPosition: xPosition + pan.x._value,
+          yPosition: yPosition + pan.y._value,
+        }),
+      );
     } else if (photoUri) {
-      dispatch(addPhoto({ uri: photoUri, labelText }));
+      dispatch(
+        addPhoto({
+          uri: photoUri,
+          labelText,
+          xPosition: pan.x._value,
+          yPosition: pan.y._value,
+        }),
+      );
     }
 
     navigation.navigate(MAIN_SCREEN);
@@ -86,7 +137,15 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ navigation, route }) => {
     <>
       <ImageBackground style={styles.lastPhoto} source={{ uri: photoUri }}>
         {labelText ? (
-          <Text style={{ ...styles.labelText, left: xPosition, top: yPosition }}>{labelText}</Text>
+          <Animated.View
+            style={{
+              left: xPosition,
+              top: yPosition,
+              transform: [{ translateX: pan.x }, { translateY: pan.y }, { scale: scale }],
+            }}
+            {...panResponder.panHandlers}>
+            <Text style={{ ...styles.labelText }}>{labelText}</Text>
+          </Animated.View>
         ) : null}
       </ImageBackground>
       <View style={styles.bottomSection}>
@@ -142,10 +201,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(52, 52, 52, 0.6)',
   },
   labelText: {
-    // position: 'relative',
-    // left: 50,
-    // top: 0,
-    fontSize: 30,
+    fontSize: 40,
     color: 'white',
   },
 });

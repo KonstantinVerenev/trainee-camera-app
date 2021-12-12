@@ -14,6 +14,19 @@ const initialState: MainState = {
 };
 
 export const reducer = (state = initialState, action: StateAction): MainState => {
+  const updatePhotoData = () => {
+    return state.photoData.map((photo) =>
+      photo.id === action.payload.id
+        ? {
+            ...photo,
+            labelText: action.payload.labelText,
+            xPosition: action.payload.xPosition,
+            yPosition: action.payload.yPosition,
+          }
+        : { ...photo },
+    );
+  };
+
   switch (action.type) {
     case ADD_PHOTO:
       return {
@@ -24,19 +37,15 @@ export const reducer = (state = initialState, action: StateAction): MainState =>
             id: Date.now(),
             uri: action.payload.uri,
             labelText: action.payload.labelText,
+            xPosition: action.payload.xPosition,
+            yPosition: action.payload.yPosition,
           },
         ],
       };
     case UPDATE_PHOTO:
       return {
         ...state,
-        photoData: [
-          ...state.photoData.map((photo) =>
-            photo.id === action.payload.id
-              ? { ...photo, labelText: action.payload.labelText }
-              : { ...photo },
-          ),
-        ],
+        photoData: [...updatePhotoData()],
       };
     default:
       return state;

@@ -15,6 +15,8 @@ type photoPayload = {
   id?: number;
   uri: string;
   labelText?: string;
+  xPosition?: number;
+  yPosition?: number;
 };
 
 export type StateAction = updatePhotoAction | addPhotoAction;
