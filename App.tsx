@@ -12,16 +12,7 @@ export const CAMERA_SCREEN = 'CameraScreen';
 
 export type RootStackParamList = {
   MainScreen: undefined;
-  CameraScreen:
-    | {
-        id: number;
-        uri: string;
-        isHereFromGallery?: boolean;
-        labelText?: string;
-        xPosition?: number;
-        yPosition?: number;
-      }
-    | undefined;
+  CameraScreen: { id: number } | undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();

@@ -28,18 +28,9 @@ const MainScreen: React.FC<MainScreenProps> = ({ navigation }) => {
     navigation.navigate(CAMERA_SCREEN);
   };
 
-  const renderItem: ListRenderItem<PhotoData> = ({
-    item: { id, uri, labelText, xPosition, yPosition },
-  }) => {
+  const renderItem: ListRenderItem<PhotoData> = ({ item: { id, uri } }) => {
     const onOpenCameraScreen = (): void => {
-      navigation.navigate(CAMERA_SCREEN, {
-        id,
-        isHereFromGallery: true,
-        uri,
-        labelText,
-        xPosition,
-        yPosition,
-      });
+      navigation.navigate(CAMERA_SCREEN, { id });
     };
 
     return (

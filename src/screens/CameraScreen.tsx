@@ -3,12 +3,13 @@ import { View, StyleSheet, Text, ImageBackground, Animated, PanResponder } from 
 import { RNCamera } from 'react-native-camera';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import prompt from 'react-native-prompt-android';
 
 import { CAMERA_SCREEN, MAIN_SCREEN, RootStackParamList } from '../../App';
 import { addPhoto, updatePhoto } from '../../store/actions';
 import { ActionButton } from '../components/ActionButton';
+import { selectPhotoData } from '../../store/selectors';
 
 type CameraScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, typeof CAMERA_SCREEN>;
@@ -16,23 +17,17 @@ type CameraScreenProps = {
 };
 
 const CameraScreen: React.FC<CameraScreenProps> = ({ navigation, route }) => {
+  const dispatch = useDispatch();
   const cameraRef = useRef<RNCamera | null>(null);
   const [flashOn, setFlashOn] = useState<boolean>(false);
-  const dispatch = useDispatch();
 
-  const {
-    id,
-    uri: initialPhotoUri,
-    isHereFromGallery,
-    labelText: initialLabelText,
-    xPosition,
-    yPosition,
-  } = route?.params || {};
-  const [photoUri, setPhotoUri] = useState<string | undefined>(initialPhotoUri);
+  const id = route?.params?.id;
+  const photoDataItem = useSelector(selectPhotoData).find((photo) => photo.id === id);
+  const { uri, labelText: initialLabelText, xPosition, yPosition } = photoDataItem || {};
+  const [photoUri, setPhotoUri] = useState<string | undefined>(uri);
   const [labelText, setLabelText] = useState<string | undefined>(initialLabelText);
 
   const pan = useRef(new Animated.ValueXY()).current;
-  const x = pan.x;
   const scale = useRef(new Animated.Value(1)).current;
 
   const panResponder = useRef(
@@ -151,7 +146,7 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ navigation, route }) => {
       <View style={styles.bottomSection}>
         <ActionButton iconName={'save-outline'} onPress={savePhoto} />
         <ActionButton iconName={'text-outline'} onPress={onEditLabelText} />
-        {isHereFromGallery ? (
+        {id ? (
           <ActionButton iconName={'exit-outline'} onPress={goBack} />
         ) : (
           <ActionButton iconName={'refresh-outline'} onPress={retakePhoto} />
