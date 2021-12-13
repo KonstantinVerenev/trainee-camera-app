@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { View, StyleSheet, Text, ImageBackground, Animated, PanResponder } from 'react-native';
 import { RNCamera } from 'react-native-camera';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -9,7 +9,7 @@ import prompt from 'react-native-prompt-android';
 import { CAMERA_SCREEN, MAIN_SCREEN, RootStackParamList } from '../../App';
 import { addPhoto, updatePhoto } from '../../store/actions';
 import { ActionButton } from '../components/ActionButton';
-import { selectPhotoData } from '../../store/selectors';
+import { selectPhotoDataById } from '../../store/selectors';
 
 type CameraScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, typeof CAMERA_SCREEN>;
@@ -22,7 +22,7 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ navigation, route }) => {
   const [flashOn, setFlashOn] = useState<boolean>(false);
 
   const id = route?.params?.id;
-  const photoDataItem = useSelector(selectPhotoData).find((photo) => photo.id === id);
+  const photoDataItem = useSelector(selectPhotoDataById(id));
   const { uri, labelText: initialLabelText, xPosition, yPosition } = photoDataItem || {};
   const [photoUri, setPhotoUri] = useState<string | undefined>(uri);
   const [labelText, setLabelText] = useState<string | undefined>(initialLabelText);
@@ -33,6 +33,7 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ navigation, route }) => {
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
+
       onPanResponderGrant: () => {
         pan.setOffset({
           x: pan.x._value,
@@ -42,17 +43,21 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ navigation, route }) => {
           x: 0,
           y: 0,
         });
+
         Animated.timing(scale, {
           toValue: 1.1,
           duration: 0,
           useNativeDriver: false,
         }).start();
       },
+
       onPanResponderMove: Animated.event([null, { dx: pan.x, dy: pan.y }], {
         useNativeDriver: false,
       }),
+
       onPanResponderRelease: () => {
         pan.flattenOffset();
+
         Animated.timing(scale, {
           toValue: 1,
           duration: 0,
@@ -87,7 +92,7 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ navigation, route }) => {
     navigation.navigate(MAIN_SCREEN);
   };
 
-  const takePhoto = async () => {
+  const takePhoto = useCallback(async () => {
     if (cameraRef?.current?.takePictureAsync) {
       try {
         const options = { quality: 0.5, base64: true };
@@ -99,21 +104,21 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ navigation, route }) => {
         console.log(error);
       }
     }
-  };
+  }, []);
 
-  const retakePhoto = () => {
+  const retakePhoto = useCallback(() => {
     setPhotoUri(undefined);
-  };
+  }, []);
 
-  const toggleFlash = () => {
+  const toggleFlash = useCallback(() => {
     setFlashOn((prevFlashState) => !prevFlashState);
-  };
+  }, []);
 
-  const goBack = () => {
+  const goBack = useCallback(() => {
     navigation.goBack();
-  };
+  }, []);
 
-  const onEditLabelText = () => {
+  const onEditLabelText = useCallback(() => {
     prompt(
       'Enter text',
       'Enter your label text',
@@ -126,7 +131,7 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ navigation, route }) => {
         placeholder: 'label text',
       },
     );
-  };
+  }, []);
 
   const PreviewImgLayout = (
     <>

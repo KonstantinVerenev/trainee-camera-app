@@ -2,31 +2,10 @@ import { ADD_PHOTO, UPDATE_PHOTO, StateAction } from './actions';
 import { MainState } from './types';
 
 const initialState: MainState = {
-  photoData: [
-    {
-      id: 23,
-      uri: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Equus_asinus_Kadzid%C5%82owo_001.jpg/640px-Equus_asinus_Kadzid%C5%82owo_001.jpg',
-      labelText: 'Ослик',
-      xPosition: 0,
-      yPosition: 0,
-    },
-  ],
+  photoData: [],
 };
 
 export const reducer = (state = initialState, action: StateAction): MainState => {
-  const updatePhotoData = () => {
-    return state.photoData.map((photo) =>
-      photo.id === action.payload.id
-        ? {
-            ...photo,
-            labelText: action.payload.labelText,
-            xPosition: action.payload.xPosition,
-            yPosition: action.payload.yPosition,
-          }
-        : { ...photo },
-    );
-  };
-
   switch (action.type) {
     case ADD_PHOTO:
       return {
@@ -43,9 +22,20 @@ export const reducer = (state = initialState, action: StateAction): MainState =>
         ],
       };
     case UPDATE_PHOTO:
+      const updatedPhotoData = state.photoData.map((photo) =>
+        photo.id === action.payload.id
+          ? {
+              ...photo,
+              labelText: action.payload.labelText,
+              xPosition: action.payload.xPosition,
+              yPosition: action.payload.yPosition,
+            }
+          : { ...photo },
+      );
+
       return {
         ...state,
-        photoData: [...updatePhotoData()],
+        photoData: updatedPhotoData,
       };
     default:
       return state;

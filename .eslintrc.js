@@ -1,48 +1,32 @@
 module.exports = {
-  'env': {
-    'es6': true,
-    'node': true
+  env: {
+    es6: true,
+    node: true,
   },
-  'extends': [
+  extends: [
     'eslint:recommended',
     'plugin:react/recommended',
     'plugin:react-hooks/recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:@typescript-eslint/recommended-requiring-type-checking',
+    'prettier',
+    'prettier/react',
   ],
-  'parser': '@typescript-eslint/parser',
-  'parserOptions': {
-    'project': './tsconfig.json',
-    'ecmaFeatures': {
-      'jsx': true
+  parser: '@typescript-eslint/parser',
+  parserOptions: {
+    project: './tsconfig.json',
+    ecmaFeatures: {
+      jsx: true,
     },
-    'ecmaVersion': 12,
-    'sourceType': 'module'
+    ecmaVersion: 12,
+    sourceType: 'module',
   },
-  'plugins': [
-    'react',
-    'react-hooks',
-    '@typescript-eslint',
-    'prettier'
-  ],
-  'rules': {
-    'indent': [
-      'error',
-      2,
-      { 'SwitchCase': 1 }
-    ],
-    'linebreak-style': [
-      'error',
-      'unix'
-    ],
-    'quotes': [
-      'error',
-      'single'
-    ],
-    'semi': [
-      'error',
-      'always'
-    ],
+  plugins: ['react', 'react-hooks', '@typescript-eslint', 'prettier'],
+  rules: {
+    indent: ['error', 2, { SwitchCase: 1 }],
+    'linebreak-style': ['error', 'unix'],
+    quotes: ['error', 'single'],
+    semi: ['error', 'always'],
     'react-hooks/rules-of-hooks': 'error',
     'react-hooks/exhaustive-deps': 'warn',
     'no-empty-function': 'off',
@@ -50,6 +34,6 @@ module.exports = {
     'react/display-name': 'off',
     'react/prop-types': 'off',
     'prettier/prettier': 'error',
-    'spaced-comment': ['error', 'always', { 'markers': ['/'] }]
-  }
+    'spaced-comment': ['error', 'always', { markers: ['/'] }],
+  },
 };
