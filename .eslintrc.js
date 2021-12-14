@@ -9,8 +9,9 @@ module.exports = {
     'plugin:react-hooks/recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:@typescript-eslint/recommended-requiring-type-checking',
-    'prettier',
-    'prettier/react',
+    //'prettier',
+    //'prettier/react',
+    //'prettier/recommended',
   ],
   parser: '@typescript-eslint/parser',
   parserOptions: {

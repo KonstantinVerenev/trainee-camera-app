@@ -116,7 +116,7 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ navigation, route }) => {
 
   const goBack = useCallback(() => {
     navigation.goBack();
-  }, []);
+  }, [navigation]);
 
   const onEditLabelText = useCallback(() => {
     prompt(
@@ -124,19 +124,19 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ navigation, route }) => {
       'Enter your label text',
       [
         { text: 'Cancel', style: 'cancel' },
-        { text: 'OK', onPress: (text) => setLabelText(text) },
+        { text: 'OK', onPress: setLabelText },
       ],
       {
         defaultValue: labelText,
         placeholder: 'label text',
       },
     );
-  }, []);
+  }, [labelText]);
 
   const PreviewImgLayout = (
     <>
       <ImageBackground style={styles.lastPhoto} source={{ uri: photoUri }}>
-        {labelText ? (
+        {labelText && (
           <Animated.View
             style={{
               left: xPosition,
@@ -144,9 +144,9 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ navigation, route }) => {
               transform: [{ translateX: pan.x }, { translateY: pan.y }, { scale: scale }],
             }}
             {...panResponder.panHandlers}>
-            <Text style={{ ...styles.labelText }}>{labelText}</Text>
+            <Text style={styles.labelText}>{labelText}</Text>
           </Animated.View>
-        ) : null}
+        )}
       </ImageBackground>
       <View style={styles.bottomSection}>
         <ActionButton iconName={'save-outline'} onPress={savePhoto} />

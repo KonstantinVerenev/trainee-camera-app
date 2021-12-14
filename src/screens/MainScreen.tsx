@@ -26,7 +26,7 @@ const MainScreen: React.FC<MainScreenProps> = ({ navigation }) => {
 
   const navigateToCameraScreen = useCallback((): void => {
     navigation.navigate(CAMERA_SCREEN);
-  }, []);
+  }, [navigation]);
 
   const renderItem: ListRenderItem<PhotoData> = ({ item: { id, uri } }) => {
     const onOpenCameraScreen = (): void => {
