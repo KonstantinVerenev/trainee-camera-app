@@ -64,7 +64,7 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ navigation, route }) => {
           useNativeDriver: false,
         }).start();
       },
-    }),
+    })
   ).current;
 
   const savePhoto = () => {
@@ -76,7 +76,7 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ navigation, route }) => {
           labelText,
           xPosition: xPosition + pan.x._value,
           yPosition: yPosition + pan.y._value,
-        }),
+        })
       );
     } else if (photoUri) {
       dispatch(
@@ -85,7 +85,7 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ navigation, route }) => {
           labelText,
           xPosition: pan.x._value,
           yPosition: pan.y._value,
-        }),
+        })
       );
     }
 
@@ -129,7 +129,7 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ navigation, route }) => {
       {
         defaultValue: labelText,
         placeholder: 'label text',
-      },
+      }
     );
   }, [labelText]);
 
@@ -143,7 +143,8 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ navigation, route }) => {
               top: yPosition,
               transform: [{ translateX: pan.x }, { translateY: pan.y }, { scale: scale }],
             }}
-            {...panResponder.panHandlers}>
+            {...panResponder.panHandlers}
+          >
             <Text style={styles.labelText}>{labelText}</Text>
           </Animated.View>
         )}

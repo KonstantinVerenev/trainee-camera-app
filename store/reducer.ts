@@ -7,36 +7,42 @@ const initialState: MainState = {
 
 export const reducer = (state = initialState, action: StateAction): MainState => {
   switch (action.type) {
-    case ADD_PHOTO:
+    case ADD_PHOTO: {
+      const { uri, labelText, xPosition, yPosition } = action.payload;
+
       return {
         ...state,
         photoData: [
           ...state.photoData,
           {
             id: Date.now(),
-            uri: action.payload.uri,
-            labelText: action.payload.labelText,
-            xPosition: action.payload.xPosition,
-            yPosition: action.payload.yPosition,
+            uri,
+            labelText,
+            xPosition,
+            yPosition,
           },
         ],
       };
-    case UPDATE_PHOTO:
+    }
+    case UPDATE_PHOTO: {
+      const { id, labelText, xPosition, yPosition } = action.payload;
+
       const updatedPhotoData = state.photoData.map((photo) =>
-        photo.id === action.payload.id
+        photo.id === id
           ? {
               ...photo,
-              labelText: action.payload.labelText,
-              xPosition: action.payload.xPosition,
-              yPosition: action.payload.yPosition,
+              labelText,
+              xPosition,
+              yPosition,
             }
-          : { ...photo },
+          : photo
       );
 
       return {
         ...state,
         photoData: updatedPhotoData,
       };
+    }
     default:
       return state;
   }
