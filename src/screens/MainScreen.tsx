@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   StyleSheet,
   FlatList,
@@ -24,13 +24,13 @@ type MainScreenProps = {
 const MainScreen: React.FC<MainScreenProps> = ({ navigation }) => {
   const photoData = useSelector(selectPhotoData);
 
-  const navigateToCameraScreen = (): void => {
+  const navigateToCameraScreen = useCallback((): void => {
     navigation.navigate(CAMERA_SCREEN);
-  };
+  }, [navigation]);
 
-  const renderItem: ListRenderItem<PhotoData> = ({ item: { uri } }) => {
+  const renderItem: ListRenderItem<PhotoData> = ({ item: { id, uri } }) => {
     const onOpenCameraScreen = (): void => {
-      navigation.navigate(CAMERA_SCREEN, { isHereFromGallery: true, uri });
+      navigation.navigate(CAMERA_SCREEN, { id });
     };
 
     return (
@@ -86,6 +86,7 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 10,
+    marginBottom: 20,
     alignItems: 'center',
     backgroundColor: 'lightgreen',
     padding: 10,

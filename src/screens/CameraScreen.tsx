@@ -1,13 +1,15 @@
-import React, { useRef, useState } from 'react';
-import { View, StyleSheet, Image } from 'react-native';
+import React, { useCallback, useRef, useState } from 'react';
+import { View, StyleSheet, Text, ImageBackground, Animated, PanResponder } from 'react-native';
 import { RNCamera } from 'react-native-camera';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import prompt from 'react-native-prompt-android';
 
 import { CAMERA_SCREEN, MAIN_SCREEN, RootStackParamList } from '../../App';
-import { addPhoto } from '../../store/actions';
+import { addPhoto, updatePhoto } from '../../store/actions';
 import { ActionButton } from '../components/ActionButton';
+import { selectPhotoDataById } from '../../store/selectors';
 
 type CameraScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, typeof CAMERA_SCREEN>;
@@ -15,22 +17,82 @@ type CameraScreenProps = {
 };
 
 const CameraScreen: React.FC<CameraScreenProps> = ({ navigation, route }) => {
+  const dispatch = useDispatch();
   const cameraRef = useRef<RNCamera | null>(null);
   const [flashOn, setFlashOn] = useState<boolean>(false);
-  const dispatch = useDispatch();
 
-  const { uri: initialPhotoUri, isHereFromGallery } = route?.params || {};
-  const [photoUri, setPhotoUri] = useState<string | undefined>(initialPhotoUri);
+  const id = route?.params?.id;
+  const photoDataItem = useSelector(selectPhotoDataById(id));
+  const { uri, labelText: initialLabelText, xPosition, yPosition } = photoDataItem || {};
+  const [photoUri, setPhotoUri] = useState<string | undefined>(uri);
+  const [labelText, setLabelText] = useState<string | undefined>(initialLabelText);
+
+  const pan = useRef(new Animated.ValueXY()).current;
+  const scale = useRef(new Animated.Value(1)).current;
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+
+      onPanResponderGrant: () => {
+        pan.setOffset({
+          x: pan.x._value,
+          y: pan.y._value,
+        });
+        pan.setValue({
+          x: 0,
+          y: 0,
+        });
+
+        Animated.timing(scale, {
+          toValue: 1.1,
+          duration: 0,
+          useNativeDriver: false,
+        }).start();
+      },
+
+      onPanResponderMove: Animated.event([null, { dx: pan.x, dy: pan.y }], {
+        useNativeDriver: false,
+      }),
+
+      onPanResponderRelease: () => {
+        pan.flattenOffset();
+
+        Animated.timing(scale, {
+          toValue: 1,
+          duration: 0,
+          useNativeDriver: false,
+        }).start();
+      },
+    })
+  ).current;
 
   const savePhoto = () => {
-    if (photoUri) {
-      dispatch(addPhoto(photoUri));
-
-      navigation.navigate(MAIN_SCREEN);
+    if (id && photoUri) {
+      dispatch(
+        updatePhoto({
+          id,
+          uri: photoUri,
+          labelText,
+          xPosition: xPosition + pan.x._value,
+          yPosition: yPosition + pan.y._value,
+        })
+      );
+    } else if (photoUri) {
+      dispatch(
+        addPhoto({
+          uri: photoUri,
+          labelText,
+          xPosition: pan.x._value,
+          yPosition: pan.y._value,
+        })
+      );
     }
+
+    navigation.navigate(MAIN_SCREEN);
   };
 
-  const takePhoto = async () => {
+  const takePhoto = useCallback(async () => {
     if (cameraRef?.current?.takePictureAsync) {
       try {
         const options = { quality: 0.5, base64: true };
@@ -42,26 +104,55 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ navigation, route }) => {
         console.log(error);
       }
     }
-  };
+  }, []);
 
-  const retakePhoto = () => {
+  const retakePhoto = useCallback(() => {
     setPhotoUri(undefined);
-  };
+  }, []);
 
-  const toggleFlash = () => {
+  const toggleFlash = useCallback(() => {
     setFlashOn((prevFlashState) => !prevFlashState);
-  };
+  }, []);
 
-  const goBack = () => {
+  const goBack = useCallback(() => {
     navigation.goBack();
-  };
+  }, [navigation]);
+
+  const onEditLabelText = useCallback(() => {
+    prompt(
+      'Enter text',
+      'Enter your label text',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'OK', onPress: setLabelText },
+      ],
+      {
+        defaultValue: labelText,
+        placeholder: 'label text',
+      }
+    );
+  }, [labelText]);
 
   const PreviewImgLayout = (
     <>
-      <Image style={styles.lastPhoto} source={{ uri: photoUri }} />
+      <ImageBackground style={styles.lastPhoto} source={{ uri: photoUri }}>
+        {labelText && (
+          <Animated.View
+            style={{
+              left: xPosition,
+              top: yPosition,
+              transform: [{ translateX: pan.x }, { translateY: pan.y }, { scale: scale }],
+            }}
+            {...panResponder.panHandlers}
+          >
+            <Text style={styles.labelText}>{labelText}</Text>
+          </Animated.View>
+        )}
+      </ImageBackground>
       <View style={styles.bottomSection}>
         <ActionButton iconName={'save-outline'} onPress={savePhoto} />
-        {isHereFromGallery ? (
+        <ActionButton iconName={'text-outline'} onPress={onEditLabelText} />
+        {id ? (
           <ActionButton iconName={'exit-outline'} onPress={goBack} />
         ) : (
           <ActionButton iconName={'refresh-outline'} onPress={retakePhoto} />
@@ -96,6 +187,8 @@ const styles = StyleSheet.create({
   },
   lastPhoto: {
     flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   bottomSection: {
     position: 'absolute',
@@ -107,5 +200,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     alignItems: 'center',
     backgroundColor: 'rgba(52, 52, 52, 0.6)',
+  },
+  labelText: {
+    fontSize: 40,
+    color: 'white',
   },
 });
